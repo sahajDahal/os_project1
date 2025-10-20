@@ -19,3 +19,11 @@ I worked on the encryption_service.py file and implemented the Vigenère cipher 
 
 b. Plan for this session:
 I plan to test the encryption and decryption with different passkeys and strings to ensure consistency. Next, I’ll begin outlining the driver.py logic, mainly setting up process communication and validating that the encryption and logger programs can both run simultaneously and respond correctly.
+
+2025-10-19 – 8:20 PM
+
+a. Thoughts so far:
+I finished writing the driver.py file. It now launches both the logger and encryption services using the subprocess module, connects their input/output streams, and provides a menu-based interface for user commands. Seeing all three components interact through pipes is a big milestone, the system is now fully functional.
+
+b. Plan for this session:
+Next, I plan to test full end-to-end functionality, ensuring the driver correctly logs actions, communicates with the encryption service, and handles errors smoothly. After that, I’ll clean up the code, add comments, and verify that the QUIT sequence properly shuts down all processes.
