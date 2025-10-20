@@ -39,7 +39,7 @@ def main():
         if cmd == "QUIT":
             break
 
-        # Handle passkey setup (alias PASSKEY → PASS)
+        # Handle passkey setup
         if cmd in ("PASS", "PASSKEY"):
             if not arg:
                 print("ERROR Missing passkey", flush=True)

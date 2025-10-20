@@ -35,3 +35,11 @@ I completed and tested the full system, the logger, encryption, and driver progr
 
 b. Plan for this session:
 Finalize the code cleanup and confirm that all example runs match the expected outputs. I’ll also review the log formatting and ensure that no passwords are recorded. Once everything looks consistent, I’ll prepare the repository for submission.
+
+2025-10-19 – 9 PM
+
+a. Thoughts so far:
+The full system is complete and working as intended. All three components, the logger, encryption service, and driver, function together smoothly using Python’s subprocess module. The driver properly handles user input, validates letters only commands, logs all actions, and shuts down both services cleanly. Testing confirmed correct encryption/decryption, logging format, and case insensitive input.
+
+b. Plan for this session:
+Finalize the submission by reviewing the README and verifying that all example runs match the project instructions.

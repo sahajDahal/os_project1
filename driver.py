@@ -113,7 +113,7 @@ def handle_inline_command(user_line: str, logger, crypto, history):
             history.append(rest)
             send_log(logger.stdin, "RESULT", "encrypt_ok")
         else:
-            # Surface backend error exactly (e.g., "Password not set")
+            # Surface backend error exactly
             print(f"Error: {rest}\n")
             send_log(logger.stdin, "ERROR", rest)
         return True
@@ -148,7 +148,7 @@ def main():
     logger, crypto = start_processes(args.logfile)
     send_log(logger.stdin, "START", "Driver started")
 
-    history = []  # holds inputs and results (uppercase)
+    history = []  # holds inputs and results
     current_menu = """
 Commands:
   password  - set or reuse a passkey (not stored in history)
@@ -163,15 +163,15 @@ Commands:
             print(current_menu)
             user_line = input("Enter command: ").strip()
 
-            # First, try handling one-line commands like "ENCRYPT HELLO"
+            # First, try handling one-line commands
             if handle_inline_command(user_line, logger, crypto, history):
                 # handled (or empty/invalid inline already reported)
                 if user_line and user_line.split(None, 1)[0].lower() in ("encrypt","decrypt","pass","passkey"):
                     # if it was an inline cmd, continue loop
                     continue
-                # fall through to allow "password"/"encrypt" without args etc.
+                # fall through to allow "password"/"encrypt"
 
-            # Fallback to interactive commands (no inline argument)
+            # Fallback to interactive commands
             cmd = user_line.lower()
 
             if cmd == "quit":
