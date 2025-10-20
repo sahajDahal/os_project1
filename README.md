@@ -21,7 +21,7 @@ Running the driver automatically launches the logger and encryption programs and
 | **logger_service.py**     | Accepts log messages via standard input and writes them to the specified log file in the format `YYYY-MM-DD HH:MM [ACTION] MESSAGE`. Stops when receiving `QUIT`.  |
 | **encryption_service.py** | Implements the Vigenère cipher. Accepts commands: `PASS` / `PASSKEY`, `ENCRYPT`, `DECRYPT`, and `QUIT`. Returns either `RESULT <output>` or `ERROR <message>`.     |
 | **devlog.md**             | Developer log containing session-by-session notes and progress updates.                                                                                            |
-| **README.md**             | This file — describes the project, how to run it, and grading notes.                                                                                               |
+| **README.md**             | This file describes the project, how to run it, and grading notes.                                                                                                 |
 | **.gitignore**            | Standard ignore file for Python caches and logs.                                                                                                                   |
 
 ---
