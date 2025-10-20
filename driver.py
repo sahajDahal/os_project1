@@ -39,7 +39,6 @@ def crypto_cmd(crypto_proc, cmd: str, arg: str = ""):
     line = f"{cmd} {arg}".strip()
     crypto_proc.stdin.write(line + "\n")
     crypto_proc.stdin.flush()
-    # One-line response: "RESULT ..." or "ERROR ..."
     resp = crypto_proc.stdout.readline()
     if not resp:
         return ("ERROR", "Encryption service not responding")
@@ -67,6 +66,80 @@ def choose_from_history(history):
                 return history[idx - 1]
         print("Invalid choice. Try again.")
 
+def handle_inline_command(user_line: str, logger, crypto, history):
+    """
+    Supports one-line forms:
+      PASS <key> | PASSKEY <key> | ENCRYPT <text> | DECRYPT <text>
+    Returns True if handled, False if not.
+    """
+    if not user_line:
+        return True  # ignore empty
+
+    parts = user_line.split(None, 1)
+    if not parts:
+        return True
+    cmd = parts[0].lower()
+    arg = parts[1] if len(parts) > 1 else ""
+
+    if cmd in ("pass", "passkey"):
+        send_log(logger.stdin, "CMD", f"{cmd}")
+        if not arg or not valid_letters(arg):
+            print("Error: passkey must contain letters only.\n")
+            send_log(logger.stdin, "ERROR", "invalid_passkey")
+            return True
+        rtype, rest = crypto_cmd(crypto, "PASS", arg.upper())
+        if rtype == "RESULT":
+            print("Passkey set.\n")
+            send_log(logger.stdin, "RESULT", "passkey_set")
+        else:
+            print(f"Error: {rest}\n")
+            send_log(logger.stdin, "ERROR", rest)
+        return True
+
+    if cmd == "encrypt":
+        send_log(logger.stdin, "CMD", "encrypt")
+        if not arg:
+            # no inline arg; let the main loop handle interactive path
+            return False
+        if not valid_letters(arg):
+            print("Error: input must contain letters only.\n")
+            send_log(logger.stdin, "ERROR", "invalid_encrypt_input")
+            return True
+        plain = arg.upper()
+        history.append(plain)
+        rtype, rest = crypto_cmd(crypto, "ENCRYPT", plain)
+        if rtype == "RESULT":
+            print(f"Encrypted: {rest}\n")
+            history.append(rest)
+            send_log(logger.stdin, "RESULT", "encrypt_ok")
+        else:
+            # Surface backend error exactly (e.g., "Password not set")
+            print(f"Error: {rest}\n")
+            send_log(logger.stdin, "ERROR", rest)
+        return True
+
+    if cmd == "decrypt":
+        send_log(logger.stdin, "CMD", "decrypt")
+        if not arg:
+            return False
+        if not valid_letters(arg):
+            print("Error: input must contain letters only.\n")
+            send_log(logger.stdin, "ERROR", "invalid_decrypt_input")
+            return True
+        cipher = arg.upper()
+        history.append(cipher)
+        rtype, rest = crypto_cmd(crypto, "DECRYPT", cipher)
+        if rtype == "RESULT":
+            print(f"Decrypted: {rest}\n")
+            history.append(rest)
+            send_log(logger.stdin, "RESULT", "decrypt_ok")
+        else:
+            print(f"Error: {rest}\n")
+            send_log(logger.stdin, "ERROR", rest)
+        return True
+
+    return False  # not an inline command we recognize
+
 def main():
     ap = argparse.ArgumentParser(description="Driver program")
     ap.add_argument("logfile", help="Path to log file for the logger")
@@ -75,7 +148,7 @@ def main():
     logger, crypto = start_processes(args.logfile)
     send_log(logger.stdin, "START", "Driver started")
 
-    history = []  # holds all entered strings and results (uppercase)
+    history = []  # holds inputs and results (uppercase)
     current_menu = """
 Commands:
   password  - set or reuse a passkey (not stored in history)
@@ -88,7 +161,18 @@ Commands:
     try:
         while True:
             print(current_menu)
-            cmd = input("Enter command: ").strip().lower()
+            user_line = input("Enter command: ").strip()
+
+            # First, try handling one-line commands like "ENCRYPT HELLO"
+            if handle_inline_command(user_line, logger, crypto, history):
+                # handled (or empty/invalid inline already reported)
+                if user_line and user_line.split(None, 1)[0].lower() in ("encrypt","decrypt","pass","passkey"):
+                    # if it was an inline cmd, continue loop
+                    continue
+                # fall through to allow "password"/"encrypt" without args etc.
+
+            # Fallback to interactive commands (no inline argument)
+            cmd = user_line.lower()
 
             if cmd == "quit":
                 send_log(logger.stdin, "CMD", "quit")
@@ -103,7 +187,7 @@ Commands:
                         print("QUIT", file=logger.stdin, flush=True)
                     except BrokenPipeError:
                         pass
-                send_log(logger.stdin, "EXIT", "Driver exiting")  # may or may not reach logger in time
+                send_log(logger.stdin, "EXIT", "Driver exiting")
                 break
 
             elif cmd == "history":
@@ -126,10 +210,8 @@ Commands:
                         print("Error: passkey must contain letters only.\n")
                         send_log(logger.stdin, "ERROR", "invalid_passkey")
                         continue
-                    # Do NOT store passkey in history
                     rtype, rest = crypto_cmd(crypto, "PASS", pw.upper())
                 else:
-                    # reuse a history string as passkey
                     pw = use
                     rtype, rest = crypto_cmd(crypto, "PASS", pw.upper())
 
