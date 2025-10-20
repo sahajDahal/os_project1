@@ -1,6 +1,6 @@
 # Vigenère Encryption System (Python)
 
-## 📄 Overview
+## Overview
 
 This project implements a three-program system that communicates through **pipes** using Python’s `subprocess` module.  
 The system includes:
@@ -13,7 +13,7 @@ Running the driver automatically launches the logger and encryption programs and
 
 ---
 
-## 📁 Files and Their Roles
+## Files and Their Roles
 
 | File                      | Description                                                                                                                                                        |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -26,7 +26,7 @@ Running the driver automatically launches the logger and encryption programs and
 
 ---
 
-## ▶️ How to Run
+## How to Run
 
 ### 1. Run the Driver (starts the whole system)
 
